@@ -20,10 +20,11 @@ jobs:
       uses: extractions/setup-just@v1
 
     - name: Clone vcpkg
-      if: !exists('vcpkg')
       run: |
-        git clone https://github.com/microsoft/vcpkg.git
-        ./vcpkg/bootstrap-vcpkg.sh
+        if [ ! -d "vcpkg" ]; then
+          git clone https://github.com/microsoft/vcpkg.git
+          ./vcpkg/bootstrap-vcpkg.sh
+        fi
 
     - name: Install dependencies
       run: |
