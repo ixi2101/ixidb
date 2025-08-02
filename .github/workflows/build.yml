@@ -44,6 +44,9 @@ jobs:
         sudo update-alternatives --set gcc /usr/bin/gcc-14
         sudo update-alternatives --set g++ /usr/bin/g++-14
 
+    - name: Verify Ninja installation
+      run: ninja --version
+
     - name: Build and Test
       run: |
         just build
@@ -51,5 +54,6 @@ jobs:
       env:
         CMAKE_TOOLCHAIN_FILE: "${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake"
         CMAKE_GENERATOR: "Ninja"
+        CMAKE_MAKE_PROGRAM: "/usr/bin/ninja"
         CC: "/usr/bin/gcc"
         CXX: "/usr/bin/g++"
