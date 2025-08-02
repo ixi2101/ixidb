@@ -4,6 +4,7 @@ project("ixidb" LANGUAGES CXX)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_C_COMPILER /usr/bin/gcc-14)
 set(CMAKE_CXX_COMPILER /usr/bin/g++-14)
+set(CMAKE_MAKE_PROGRAM /usr/bin/ninja)
 
 
 include(CTest)
