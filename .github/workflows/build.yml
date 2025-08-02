@@ -49,11 +49,13 @@ jobs:
 
     - name: Build and Test
       run: |
+        cd ixidb
+        export CMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake"
         just build
         just test
       env:
-        CMAKE_TOOLCHAIN_FILE: "${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake"
         CMAKE_GENERATOR: "Ninja"
         CMAKE_MAKE_PROGRAM: "/usr/bin/ninja"
-        CC: "/usr/bin/gcc"
-        CXX: "/usr/bin/g++"
+        CC: "/usr/bin/gcc-14"
+        CXX: "/usr/bin/g++-14"
+        CXXFLAGS: "-std=c++23"
