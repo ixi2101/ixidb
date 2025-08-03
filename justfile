@@ -1,18 +1,39 @@
-set working-directory := 'ixidb'
-
-# Clone vcpkg if it doesn't exist
+# Setup vcpkg
 bootstrap-vcpkg:
-    if [ ! -d "../vcpkg" ]; then \
-        cd .. && git clone https://github.com/microsoft/vcpkg.git && \
-        ./vcpkg/bootstrap-vcpkg.sh; \
+    if [ ! -d "vcpkg" ]; then \
+        git clone https://github.com/microsoft/vcpkg.git && \
+        cd vcpkg && \
+        git fetch origin && \
+        ./bootstrap-vcpkg.sh; \
+    else \
+        cd vcpkg && \
+        git fetch origin; \
     fi
 
 # Set default toolchain file path if not provided through environment
-export CMAKE_TOOLCHAIN_FILE := env_var_or_default('CMAKE_TOOLCHAIN_FILE', '../vcpkg/scripts/buildsystems/vcpkg.cmake')
+export CMAKE_TOOLCHAIN_FILE := env_var_or_default('CMAKE_TOOLCHAIN_FILE', 'vcpkg/scripts/buildsystems/vcpkg.cmake')
 
-@build: bootstrap-vcpkg
-	cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
-	cmake --build build
+# Configure the project
+@configure: bootstrap-vcpkg
+    cmake -B build -S . \
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE} \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_TESTING=ON \
+        -DCMAKE_CXX_COMPILER=/usr/bin/g++-14 \
+        -G "Ninja"
 
+# Build the project
+@build: configure
+    cmake --build build --config Release
+
+# Run tests
 @test: build
-	cd build && ctest --output-on-failure
+    ctest --test-dir build --output-on-failure
+
+# Install the project
+@install: build
+    cmake --install build
+
+# Clean build artifacts
+@clean:
+    rm -rf build/
