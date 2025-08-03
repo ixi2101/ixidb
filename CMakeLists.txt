@@ -6,6 +6,9 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems
 
 project(ixidb VERSION 0.1.0 LANGUAGES CXX)
 
+# Add code coverage option
+option(CODE_COVERAGE "Enable coverage reporting" OFF)
+
 # Require C++23
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -13,6 +16,13 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Export compilation database for tools
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Configure coverage
+if(CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    message(STATUS "Enabling coverage reporting with gcov")
+    add_compile_options(-O0 -g --coverage)
+    add_link_options(--coverage)
+endif()
 
 # Add dependencies
 find_package(PkgConfig REQUIRED)
@@ -41,3 +51,10 @@ include(GNUInstallDirs)
 install(DIRECTORY include/ 
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         FILES_MATCHING PATTERN "*.hpp")
+
+# Create symlink for compile commands (useful for clangd)
+execute_process(
+    COMMAND ${CMAKE_COMMAND} -E create_symlink 
+    ${CMAKE_BINARY_DIR}/compile_commands.json
+    ${CMAKE_SOURCE_DIR}/compile_commands.json
+)

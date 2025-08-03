@@ -30,7 +30,7 @@ jobs:
         sudo apt-get update
         sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
         sudo apt-get update
-        sudo apt-get install -y cmake ninja-build make g++-14
+        sudo apt-get install -y cmake ninja-build make g++-14 lcov
 
     - name: Set GCC 14 as default
       run: |
@@ -45,12 +45,16 @@ jobs:
         g++ --version
         gcc --version
 
-    - name: Build and Test
+    - name: Build and Test with Coverage
       run: |
         export CMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake"
-        just configure
-        just build
-        just test
+        just coverage
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage-report
+        path: coverage_report/
       env:
         CMAKE_BUILD_TYPE: Release
         CMAKE_MAKE_PROGRAM: "/usr/bin/ninja"
