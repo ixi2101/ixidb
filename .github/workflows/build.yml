@@ -19,23 +19,18 @@ jobs:
     - name: Install just
       uses: extractions/setup-just@v1
 
-    - name: Clone vcpkg
+    - name: Setup vcpkg
       run: |
-        if [ ! -d "vcpkg" ]; then
-          git clone https://github.com/microsoft/vcpkg.git
-          ./vcpkg/bootstrap-vcpkg.sh
-        fi
+        git clone https://github.com/microsoft/vcpkg.git
+        cd vcpkg && git fetch origin
+        ./bootstrap-vcpkg.sh
 
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y g++ cmake ninja-build make
-
-    - name: Install GCC 14
-      run: |
         sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
         sudo apt-get update
-        sudo apt-get install -y g++-14
+        sudo apt-get install -y cmake ninja-build make g++-14
 
     - name: Set GCC 14 as default
       run: |
@@ -44,17 +39,20 @@ jobs:
         sudo update-alternatives --set gcc /usr/bin/gcc-14
         sudo update-alternatives --set g++ /usr/bin/g++-14
 
-    - name: Verify Ninja installation
-      run: ninja --version
+    - name: Verify tools
+      run: |
+        ninja --version
+        g++ --version
+        gcc --version
 
     - name: Build and Test
       run: |
-        cd ixidb
         export CMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        just configure
         just build
         just test
       env:
-        CMAKE_GENERATOR: "Ninja"
+        CMAKE_BUILD_TYPE: Release
         CMAKE_MAKE_PROGRAM: "/usr/bin/ninja"
         CC: "/usr/bin/gcc-14"
         CXX: "/usr/bin/g++-14"
